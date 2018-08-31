@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <com.app.motion.cuberotation.view.CubeRotationView
+        android:id="@+id/cube_panel"
+        android:layout_width="240dp"
+        android:layout_height="match_parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:background="#eaea"
+            android:gravity="center"
+            android:text="text1"
+            android:textSize="22sp" />
+
+        <TextView
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:background="#7AC5CD"
+            android:gravity="center"
+            android:text="text2"
+            android:textSize="22sp" />
+
+        <TextView
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:background="#BEBEBE"
+            android:gravity="center"
+            android:text="text3"
+            android:textSize="22sp" />
+
+        <TextView
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:background="#4169E1"
+            android:gravity="center"
+            android:text="text4"
+            android:textSize="22sp" />
+
+        <TextView
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:background="#556B2F"
+            android:gravity="center"
+            android:text="text5"
+            android:textSize="22sp" />
+
+        <TextView
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:background="#8B814C"
+            android:gravity="center"
+            android:text="text6"
+            android:textSize="22sp" />
+    </com.app.motion.cuberotation.view.CubeRotationView>
+
+    <SeekBar
+        android:id="@+id/seekbar"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent" />
+</android.support.constraint.ConstraintLayout>
