@@ -1,14 +1,17 @@
 package com.app.motion.cuberotation.view;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Camera;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
-import android.graphics.Paint;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.LinearInterpolator;
 import android.widget.SeekBar;
 
 public class CubeRotationView extends ViewGroup implements SeekBar.OnSeekBarChangeListener {
@@ -19,9 +22,9 @@ public class CubeRotationView extends ViewGroup implements SeekBar.OnSeekBarChan
     private int mHeight;
     private Camera mCamera;
     private Matrix matrix;
-    private Matrix mRotateMatrix;
+    private int mItemWidth;
+    private ValueAnimator mValueAnimator;
 
-    private int testAngle;
 
     public CubeRotationView(Context context) {
         this(context, null);
@@ -40,7 +43,6 @@ public class CubeRotationView extends ViewGroup implements SeekBar.OnSeekBarChan
         setWillNotDraw(false);
         mCamera = new Camera();
         matrix = new Matrix();
-        mRotateMatrix = new Matrix();
     }
 
 
@@ -84,14 +86,14 @@ public class CubeRotationView extends ViewGroup implements SeekBar.OnSeekBarChan
         final int childCount = this.getChildCount();
         if (childCount > 0) {
             View firstView = this.getChildAt(0);
-            int itemWidth = firstView.getMeasuredWidth();
+            int itemWidth = mItemWidth = firstView.getMeasuredWidth();
             int itemHeight = firstView.getMeasuredHeight();
             int top = (mHeight - itemHeight) / 2;
             int left = (mWidth - itemWidth) / 2;
             for (int i = 0; i < childCount; i++) {
                 final View currentView = this.getChildAt(i);
                 currentView.layout(left, top, left + itemWidth, top + itemHeight);
-                top += itemHeight;
+                left += itemWidth;
             }
         }
     }
@@ -100,58 +102,82 @@ public class CubeRotationView extends ViewGroup implements SeekBar.OnSeekBarChan
     @Override
     protected void dispatchDraw(Canvas canvas) {
         Log.d("wanghaha", "----dispatchDraw");
-
-        canvas.save();
-        canvas.setMatrix(mRotateMatrix);
-        mCamera.save();
         final int childCount = this.getChildCount();
         for (int i = 0; i < childCount; i++) {
             drawChild(canvas, i);
         }
-        mCamera.restore();
-        canvas.restore();
     }
 
 
     private void drawChild(Canvas canvas, int index) {
         final View childView = this.getChildAt(index);
-        if (index == 0) {
-            drawChild(canvas, childView, getDrawingTime());
+        int currentScrollX = getPaddingLeft() + getScrollX();
+        int gap = (mWidth - mItemWidth) / 2;
+        int currentLeft = childView.getLeft() - gap;
+        //右边超出了屏幕不绘制
+        if (currentScrollX + mItemWidth < currentLeft) {
             return;
         }
-        if (index == 1) {
-            mCamera.rotateX(-90);
-            mCamera.getMatrix(matrix);
-            matrix.preTranslate(-1 * mWidth / 2, -1 * childView.getTop());
-            matrix.postTranslate(mWidth / 2, childView.getTop());
-            canvas.concat(matrix);
-            drawChild(canvas, childView, getDrawingTime());
+        //左边超出了屏幕不绘制
+        if (currentScrollX > currentLeft + mItemWidth) {
+            return;
         }
+
+        float centerX = currentScrollX > currentLeft ? (currentLeft + mItemWidth + gap)
+                : currentLeft + gap;
+        float centerY = mHeight / 2;
+        float degree = (currentScrollX - currentLeft) * 1.0f / mItemWidth * 90 * -1;
+        Log.d("wanghaha", "---value:" + (currentScrollX - currentLeft));
+        Log.d("wanghaha", "---degree:" + degree);
+        if (degree > 90 || degree < -90) {
+            return;
+        }
+        canvas.save();
+        mCamera.save();
+        mCamera.rotateY(degree);
+        mCamera.getMatrix(matrix);
+
+        matrix.preTranslate(-1 * centerX, -1 * centerY);
+        matrix.postTranslate(centerX, centerY);
+        canvas.concat(matrix);
+        drawChild(canvas, childView, getDrawingTime());
+        mCamera.restore();
+        canvas.restore();
     }
 
-    @Override
-    protected void onDraw(Canvas canvas) {
-        super.onDraw(canvas);
-        canvas.save();
-        canvas.drawLine(getWidth() / 2, 0, getWidth() / 2, getHeight(), new Paint(Paint.ANTI_ALIAS_FLAG));
-        canvas.drawLine(0, getHeight() / 2, getWidth(), getHeight() / 2, new Paint(Paint.ANTI_ALIAS_FLAG));
-        canvas.restore();
+
+    public void start() {
+        mValueAnimator = ValueAnimator.ofInt(0, mItemWidth * 3);
+        mValueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator valueAnimator) {
+                int mAnimatedValue = (int) valueAnimator.getAnimatedValue();
+                Log.d("wanghaha", "----animator value:" + mAnimatedValue);
+                scrollTo((int) mAnimatedValue, 0);
+                invalidate();
+            }
+        });
+
+        mValueAnimator.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationRepeat(Animator animation) {
+                scrollTo(0, 0);
+            }
+        });
+
+        mValueAnimator.setInterpolator(new LinearInterpolator());
+        mValueAnimator.setDuration(3000);
+        mValueAnimator.setRepeatMode(ValueAnimator.RESTART);
+        mValueAnimator.setRepeatCount(ValueAnimator.INFINITE);
+        mValueAnimator.start();
     }
 
     @Override
     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-
-        int value = (int) (progress * 1.0 / 100 * 360);
-        testAngle = value;
-        mCamera.save();
-        mCamera.translate(0, 0, 600);
-        mCamera.rotateY(value);
-        mCamera.getMatrix(mRotateMatrix);
-        mCamera.restore();
-        mRotateMatrix.preTranslate(-1 * getWidth() / 2, -1 * getHeight() / 2);
-        mRotateMatrix.postTranslate(getWidth() / 2, getHeight() / 2);
-        invalidate();
+        int distance = (int) (progress * 1.0f / 100 * mItemWidth * 3);
+        this.scrollTo(distance, 0);
         postInvalidate();
+        invalidate();
     }
 
     @Override

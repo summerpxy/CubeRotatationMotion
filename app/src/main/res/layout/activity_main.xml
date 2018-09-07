@@ -47,21 +47,6 @@
             android:text="text4"
             android:textSize="22sp" />
 
-        <TextView
-            android:layout_width="150dp"
-            android:layout_height="150dp"
-            android:background="#556B2F"
-            android:gravity="center"
-            android:text="text5"
-            android:textSize="22sp" />
-
-        <TextView
-            android:layout_width="150dp"
-            android:layout_height="150dp"
-            android:background="#8B814C"
-            android:gravity="center"
-            android:text="text6"
-            android:textSize="22sp" />
     </com.app.motion.cuberotation.view.CubeRotationView>
 
     <SeekBar

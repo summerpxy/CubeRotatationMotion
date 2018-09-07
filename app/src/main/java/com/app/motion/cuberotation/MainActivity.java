@@ -22,4 +22,10 @@ public class MainActivity extends AppCompatActivity {
 
         seekBar.setOnSeekBarChangeListener(mCubeView);
     }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        mCubeView.start();
+    }
 }
